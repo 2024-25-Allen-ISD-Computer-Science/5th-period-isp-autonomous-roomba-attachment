@@ -111,9 +111,33 @@ void readPath(const std::string &pathData) {
       Point p3 = {std::stof(tokens[i+3]), std::stof(tokens[i+4])}
       i+=5;
       std::vector<Point> pointsApproximated = QuadraticBezierCurve(p1, p2, p3, 10);
+      for (size_t j = 1; j < curvePoints.size(); j++) {
+              if (!penDown) {
+                  gcode.push_back("M3 ; Pen Down");
+                  penDown = true;
+              }
+              std::ostringstream oss;
+              oss << "G1 X" << curvePoints[j].x << " Y" << curvePoints[j].y << " F" << feedRate;
+              gcode.push_back(oss.str());
+      }
+      current = p3;
       
     }
     i++;
+    else if (token == "Z" || token == "z") {
+          i++;
+          if (!penDown) {
+              gcode.push_back("M3 ; Pen Down");
+              penDown = true;
+          }
+          std::ostringstream oss;
+          oss << "G1 X" << startPoint.x << " Y" << startPoint.y << " F" << feedRate;
+          gcode.push_back(oss.str());
+          current = startPoint;
+          gcode.push_back("M5 ; Pen Up");
+          penDown = false;
+    }
+
   }
 }
 std::vector<std::string> tokenizePath(const std::string &data) {
